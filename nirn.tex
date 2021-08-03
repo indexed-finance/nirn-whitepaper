@@ -170,13 +170,13 @@ Alongside the functions you would typically expect to see in an interface for le
 The latter function acts as the skeleton upon which a vault reweighting is validated: when a new weighting is proposed, the current liquidity deltas are used in calls to \texttt{getHypotheticalAPR} to determine the \textit{current} yield, the necessary liquidity deltas are calculated and used to retrieve the \textit{proposed} yield, and if the latter exceeds the former, the reweighting is executed.\\
 
 \noindent
-All lending protocols are slightly different: some choose not to utilise wrapper tokens (e.g. dYdX), whereas others have governance rewards that can only be claimed by the depositor (Aave V2). In all cases, token adapters are designed to abstract all implementation details such that depositors receive their full interest without ever interacting with the lending markets directly. This sometimes requires that they significantly extend their scope beyond the typical wrapping of function calls.\\
+All lending protocols are slightly different: some choose not to utilise wrapper tokens (e.g. dYdX), whereas others have governance rewards that can only be claimed by the depositor (Aave V2). In all cases, token adapters are designed to abstract away implementation details such that depositors receive their full interest without ever interacting with the lending markets directly. This sometimes requires that they extend their scope beyond wrapping function calls.\\
 
 \noindent
-Adapters for lending markets which do not have tokens implement ERC20 token wrappers for the markets in question to preserve the assumption that all adapters have both an underlying and wrapper token. When a lending market only allows the owner of a token to execute disbursal of payments to the owner, such as with stkAave rewards in Aave V2, the adapter holds deposits on behalf of users and handles. All adapters for lending markets with secondary reward tokens handle disbursals at the end of withdrawal transactions.\\
+Adapters for lending markets which do not have tokens implement ERC20 token wrappers for the markets in question to preserve the assumption that all adapters have both an underlying and wrapper token. When a lending market only allows the owner of a token to execute disbursal of payments to the owner, such as with \texttt{stkAave} rewards for Aave V2, the adapter holds deposits on behalf of users and handles. All adapters for lending markets with secondary reward tokens handle disbursals at the end of withdrawal transactions.\\
 
 \noindent
-The one thing adapters do not handle is the conversion between reward token and underlying token. This is outside of the scope of token adapters, which are designed only to abstract the specific behavior needed to deposit, withdraw and claim interest from lending markets..\\
+One thing that token adapters do not handle is the conversion between reward token and underlying token. This is considered to be outside of their scope: they are intended only to abstract the specific behaviour needed to deposit, withdraw and claim interest from lending markets.\\
 
 \noindent
 Some points of interest related to the implementation of token adapters:
@@ -193,6 +193,7 @@ This often requires token adapters to perform calculations that are typically ha
     When necessary, precision in the short-term rate is sacrificed to preserve accuracy. For example, the precise per-block interest for lenders can be queried from Compound, but Compound also distributes rewards in the form of the governance token \texttt{COMP}. Nirn vaults do not have the ability to instantaneously sell \texttt{COMP} as it is earned: this - along with the fact that there is no direct conversion rate between \texttt{COMP} and any other underlying asset - makes it impossible to obtain a \textit{precise} APR for \texttt{COMP} rewards. A more accurate result can be obtained by including these rewards in the reported APR of the adapter by using a price oracle.
 \end{itemize}
 
+\newpage
 \noindent
 There are two `categories' of token adapter: ERC20 adapters and Ether adapters. In the latter case, \texttt{WETH} is always used as the underlying, regardless of whether the protocol in question lends Ether or Wrapped Ether.\\
 
