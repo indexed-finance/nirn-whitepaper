@@ -4,10 +4,11 @@
 \usepackage{appendix}
 \usepackage{hyperref}
 \usepackage{amsmath}
+\usepackage{apacite}
 
 \title{Nirn: A Compositional, Permissionless,\\ Extensible Yield Aggregator}
 \author{\href{https://twitter.com/laurence_e_day}{Dr Laurence E. Day} \& \href{https://twitter.com/d1ll0nk}{Dillon Kellar}\\\href{https://indexed.finance}{Indexed Finance}\\\\\texttt{\{laurence, dillon\}@indexed.finance}\\\\V1.0}
-\date{2 August 2021}
+\date{4 August 2021}
 
 \begin{document}
 
@@ -43,10 +44,10 @@ These various protocols can be - and often are -- viewed as black boxes from the
 However, the nature of these lending protocols is such that the rate of return on loaned assets is inversely proportional to the size of the capital pool available to borrowing counterparties. More bluntly: in the presence of an excess of available capital, borrowing rates  - and returns on loaned assets - decrease.\\
 
 \noindent
-These protocols are mostly siloed from each other, leading to the situation whereby lending a given amount of capital to a particular protocol decreases the rate of return relative to others. This is a problem that was first tackled by Yearn, which automatically migrated capital to whichever protocol was offering higher returns at the time of calling.\\
+These protocols are mostly siloed from each other, leading to the situation whereby lending a given amount of capital to a particular protocol decreases the rate of return relative to others. This is a problem that was first tackled by Yearn~\cite{yearn}, which automatically migrated capital to whichever protocol was offering higher returns at the time of calling.\\
 
 \noindent
-Nirn is an evolution of this concept: a wholly-automated  yield aggregator, operating across approved protocols via a common interface and deferring the choice of how yield is generated to the black-boxes of the protocols themselves.\\
+Nirn is an evolution of this concept: a yield aggregator~\cite{cousaert2021sok} that operates across approved protocols via a common interface and defers how yield is generated to the black-boxes of the protocols themselves.\\
 
 \noindent
 Nirn is \textit{compositional}: each vault is associated with an array of weightings, which corresponds to the proportions of the pool to deposit with each supported protocol, so as to minimise the reduction in the rate of return across the weighted average of all exposures.\\
@@ -63,18 +64,18 @@ Nirn is \textit{extensible}: new lending protocols can be integrated by simply d
 At the time of launch, Nirn supports the following protocols:
 
 \begin{itemize}
-\item Aave V1 \& V2
-\item Compound
-\item C.R.E.A.M. \& Iron Bank
-\item Fulcrum (bZx)
+\item Aave V1 \& V2~\cite{aave}
+\item Compound~\cite{compound}
+\item C.R.E.A.M. \& Iron Bank~\cite{cream}
+\item Fulcrum (bZx)~\cite{bZx}
 \end{itemize}
 
 \noindent
 The following protocols are ready for integration, pending final tests:
 
 \begin{itemize}
-\item dYdX
-\item Rari Fuse
+\item dYdX~\cite{dYdX}
+\item Rari Fuse~\cite{rari}
 \end{itemize}
 
 \subsection{Supported Assets}
@@ -465,7 +466,7 @@ As discussed prior, Nirn is open-ended about the \textit{way} in which capital i
 
 \subsection{Formulation}
 
-Calculating the optimal allocation of a pool of funds $v^p$ for a vault can be viewed as an variation on the \{0, 1\}-knapsack problem (ZOKP), which states:\\
+Calculating the optimal allocation of a pool of funds $v^p$ for a vault can be viewed as an variation on the \{0, 1\}-knapsack problem (ZOKP)~\cite{knapsack}, which states:\\
 
 \noindent
 ``Given a maximum capacity $W$ and the weights $w$ and values $v$ of an array of $n$ items, find the maximum value subset $n' \subseteq n$ such that the sum of the corresponding weights is less than or equal to $W$."
@@ -491,7 +492,7 @@ The outer multiplication by $w_i$ is performed to ensure that the resulting elem
 
 \subsection{The Solving Process}
 
-In this section, we briefly explain -- in prose -- the process by which the ZOKP algorithm selects maximum value subsets, corresponding in our case to optimal capital allocations. For those that are more code inclined, the algorithm itself is presented in section~\ref{zokp}.\\
+In this section, we briefly explain -- in prose -- the process by which a ZOKP algorithm selects maximum value subsets, corresponding in our case to optimal capital allocations. For those that are more code inclined, an algorithm is presented in section~\ref{zokp}.\\
 
 \noindent
 Given a maximum capacity $W$ and the length $L$ of the arrays $n$, $w$ and $v$, we first create a $(L+1) \times (W+1)$ matrix $K$, the elements of which - $K[i][j]$ - correspond to the maximum net APR achievable using the first $i$ members of $n$ against a capacity of $j$. The first row and column correspond, respectively, to the cases where the input arrays are empty and the maximum capacity is zero.\\
@@ -524,6 +525,7 @@ We now use $K$ to select members of a solution subset $n' \subseteq n$ -- the al
     \end{itemize}
 \end{enumerate}
 
+\newpage
 \subsection{Solution Constraints}
 \label{soln-constraints}
 
@@ -661,6 +663,9 @@ We conclude by briefly surveying the ways in which Nirn can be modified, who has
 \subsection{Access Controls}
 
 \noindent
+\textbf{Note}: the first vaults that we deploy will be implemented as upgradable proxies~\cite{proxycontracts}, in order to head off any issues that are detected early on. This means that the Indexed Finance DAO can change the entire contract implementation, subject to a successful Governor Alpha vote. Once we are satisfied that the existing implementation is secure, we will lock the implementation of the vaults that exist at that point, and utilise non-upgradable proxies going forward. The rest of this section should be read bearing this in mind.\\
+
+\noindent
 For any given Nirn vault, the following can be changed:
 
 \begin{enumerate}
@@ -672,8 +677,6 @@ For any given Nirn vault, the following can be changed:
     \item Whether or not a vault is accepting deposits.
 \end{enumerate}
 
-\noindent
-\textbf{Note}: the first vaults that we deploy will be implemented as upgradable proxies, in order to head off any issues that are detected early on. This means that the DAO can change the entire contract implementation, subject to a successful vote. Once we are satisfied that the existing implementation is secure, we will lock the implementation of the vaults that exist at that point, and utilise non-upgradable proxies going forward.\\
 
 \noindent
 The ability to burn wrapper tokens and withdraw from a Nirn vault cannot be frozen: depositors are free to retrieve their assets at any time.\\
@@ -705,7 +708,7 @@ As an example of the former, consider the following attack that could be execute
 \end{itemize}
 
 \noindent
-More generally, any vulnerability in the underlying protocols that leads to a loss of funds is -- by proxy -- a vulnerability in Nirn itself, provided that a Nirn vault has a non-zero allocation to an affected protocol during an attack. We have attempted to minimise the chances of such an attack affecting Nirn by initially whitelisting only `blue-chip' lending protocols but, as with all things DeFi, the risk cannot be completely eliminated.
+More generally, any vulnerability in the underlying protocols that leads to a loss of funds is -- by proxy -- a vulnerability in Nirn itself, provided that a Nirn vault is exposed to an affected protocol via an active token adapter. We have attempted to minimise the chances of such an attack affecting Nirn by initially whitelisting only `blue-chip' lending protocols but, as with all things DeFi, the risk cannot be completely eliminated.
 
 \subsubsection*{Example: Incorrect Token Adapter Logic Vulnerability}
 
@@ -738,7 +741,12 @@ The latest \LaTeX~file for this whitepaper can be found at:
 \end{center}
 
 \begin{itemize}
-    \item V1.0 - 2 August 2021 - initial release.
+    \item V1.0 - 4 August 2021 - initial release.
 \end{itemize}
+
+\pagenumbering{gobble}
+\bibliographystyle{apacite}
+\newpage
+\bibliography{citations.bib}
 
 \end{document}
